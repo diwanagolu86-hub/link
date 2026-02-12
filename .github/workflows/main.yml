@@ -1,18 +1,20 @@
-name: Linkpays Matrix Bot
+name: Linkpays Sequential Bot
 
 on:
-  workflow_dispatch:  # Manual Run Button
+  workflow_dispatch: # Manual run button
 
 jobs:
   run-bot:
     name: Bot-Instance-${{ matrix.run_id }}
     runs-on: ubuntu-latest
     
-    # Ye hai Matrix Strategy (20 Copies)
     strategy:
-      fail-fast: false  # Agar ek fail ho, to baaki chalte rahein
+      fail-fast: false
+      # 'max-parallel: 1' ensure karega ki jobs ek ke baad ek chalein
+      max-parallel: 1 
       matrix:
-        run_id: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+        # Sirf 5 bots ki list
+        run_id: [1, 2, 3, 4, 5]
 
     steps:
       - name: Checkout Code
@@ -25,10 +27,15 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install -r requirements.txt
+          pip install playwright fake-useragent
           playwright install chromium
           playwright install-deps
 
       - name: Run Bot Instance
-        run: python bot.py
-        
+        # Har bot ke beech mein thoda extra delay (Optional)
+        run: |
+          echo "Starting Bot Instance ${{ matrix.run_id }}..."
+          python bot.py
+          echo "Bot Instance ${{ matrix.run_id }} finished. Waiting before next job..."
+          sleep 10
+          
